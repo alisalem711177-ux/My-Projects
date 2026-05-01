@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>اختبار الذكاء الاصطناعي - صح وخطأ مع التصحيح</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        header h1 { font-size: 1.8rem; margin-bottom: 8px; }
+        header p { font-size: 0.95rem; opacity: 0.95; }
+
+        .screen { display: none; animation: fadeIn 0.4s ease; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .start-screen {
+            background: var(--card-bg);
+            padding: 40px 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group input {
+            width: 100%; padding: 14px; border: 2px solid var(--border-color);
+            border-radius: 10px; font-size: 1rem; transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none; border-color: var(--primary-color);
+        }
+
+        .start-btn {
+            width: 100%; padding: 14px; background: var(--success-color);
+            color: white; border: none; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+        .start-btn:hover { background: #059669; transform: translateY(-2px); }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item { text-align: center; }
+        .stat-value { display: block; font-size: 1.3rem; font-weight: bold; color: var(--primary-color); }
+        .stat-label { font-size: 0.8rem; color: #64748b; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%; height: 8px; background: var(--border-color);
+            border-radius: 4px; margin-bottom: 20px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: var(--primary-color);
+            width: 0%; transition: width 0.4s ease;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        .questions-sidebar {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .questions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 6px;
+        }
+
+        .question-btn {
+            aspect-ratio: 1; border: 2px solid var(--border-color);
+            background: #f8fafc; border-radius: 8px; cursor: pointer;
+            font-weight: 600; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .question-btn:hover { background: #e2e8f0; }
+        .question-btn.current { background: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(1.05); }
+        .question-btn.answered { background: var(--success-color); color: white; border-color: var(--success-color); }
+        .question-btn.answered.wrong { background: var(--error-color); border-color: var(--error-color); }
+
+        .quiz-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .question-text { font-size: 1.3rem; font-weight: 700; margin-bottom: 25px; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+
+        .option-btn {
+            background: #f8fafc; border: 2px solid var(--border-color);
+            padding: 20px; border-radius: 12px; cursor: pointer;
+            font-size: 1.2rem; font-weight: 700; min-height: 80px;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) { background: #e2e8f0; transform: translateY(-2px); }
+        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .option-btn.correct { background: #dcfce7; border-color: var(--success-color); color: #166534; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+        .option-btn.wrong { background: #fee2e2; border-color: var(--error-color); color: #991b1b; }
+
+        .feedback {
+            padding: 20px; border-radius: 12px; margin-bottom: 20px;
+            display: none; border: 2px solid transparent; animation: fadeIn 0.4s ease;
+        }
+
+        .correction-box {
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,0,0,0.1);
+            font-weight: 500; font-size: 1rem; line-height: 1.7;
+        }
+
+        .navigation-buttons { display: flex; justify-content: space-between; gap: 15px; margin-top: auto; }
+        .nav-btn { 
+            padding: 12px 25px; border: none; border-radius: 10px; font-weight: 700; 
+            cursor: pointer; min-width: 130px; display: flex; justify-content: center; align-items: center; gap: 8px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .nav-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .prev-btn { background: #e2e8f0; color: #333; }
+        .next-btn { background: var(--primary-color); color: white; }
+        .finish-btn { background: var(--success-color); color: white; display: none; }
+
+        /* Keyboard Hints UI */
+        kbd {
+            background-color: #ffffff; border: 1px solid #cbd5e1;
+            border-radius: 6px; box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+            color: #475569; display: inline-block; font-size: 0.8rem;
+            font-weight: 700; padding: 2px 6px; font-family: monospace;
+        }
+        .option-btn kbd { background-color: #e2e8f0; border-color: #cbd5e1; }
+        .next-btn kbd, .finish-btn kbd { background-color: rgba(255,255,255,0.2); color: #fff; border: none; box-shadow: none; }
+
+        .result-screen { text-align: center; background: var(--card-bg); padding: 40px; border-radius: 20px; }
+        .score-circle {
+            width: 180px; height: 180px; border-radius: 50%; border: 10px solid var(--primary-color);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 20px auto; font-size: 2.5rem; font-weight: 800; color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-content { grid-template-columns: 1fr; }
+            .options-grid { grid-template-columns: 1fr; }
+            kbd { display: none; } /* إخفاء التلميحات في الجوال لأن لوحة المفاتيح غير مستخدمة غالباً */
+        }
+
+        footer { text-align: center; padding: 20px; color: #94a3b8; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>اختبار الذكاء الاصطناعي (صح وخطأ)</h1>
+            <p>مع ميزة التصحيح العلمي لتعزيز المعرفة</p>
+            <a href="index.html" style="display:block;margin-top:15px;padding:12px;background:#007bff;color:white;text-align:center;border-radius:10px;text-decoration:none;">🚀 الانتقال إلى الصفحة الرئيسية</a>
+    
+        </header>
+
+        <div id="start-screen" class="screen active">
+            <div class="start-screen">
+                <h2>مرحباً بك في الاختبار</h2>
+                <div class="form-group">
+                    <label>اسم الطالب</label>
+                    <input type="text" id="student-name-input" placeholder="أدخل اسمك هنا...">
+                </div>
+                <button class="start-btn" onclick="startQuiz()">ابدأ الاختبار الآن</button>
+            </div>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <div class="stats-bar">
+                <div class="stat-item"><span class="stat-value" id="student-display">--</span><span class="stat-label">الطالب</span></div>
+                <div class="stat-item"><span class="stat-value" id="correct-count">0</span><span class="stat-label">صحيحة</span></div>
+                <div class="stat-item"><span class="stat-value" id="wrong-count">0</span><span class="stat-label">خاطئة</span></div>
+                <div class="stat-item"><span class="stat-value" id="remaining-count">0</span><span class="stat-label">متبقي</span></div>
+            </div>
+            
+            <!-- شريط التقدم -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="main-content">
+                <aside class="questions-sidebar">
+                    <div class="questions-list" id="questions-list"></div>
+                </aside>
+
+                <main class="quiz-card">
+                    <div class="question-text" id="question-text">جاري التحميل...</div>
+                    <div class="options-grid" id="options-container">
+                        <button class="option-btn" onclick="checkAnswer('صح')">صح <kbd>1</kbd></button>
+                        <button class="option-btn" onclick="checkAnswer('خطأ')">خطأ <kbd>2</kbd></button>
+                    </div>
+                    <div id="feedback" class="feedback"></div>
+                    <div class="navigation-buttons">
+                        <button id="prev-btn" class="nav-btn prev-btn" onclick="previousQuestion()"><kbd>←</kbd> السابق</button>
+                        <button id="next-btn" class="nav-btn next-btn" onclick="nextQuestion()">التالي <kbd>→</kbd></button>
+                        <button id="finish-btn" class="nav-btn finish-btn" onclick="confirmFinish()">إنهاء</button>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <div class="result-screen">
+                <h2>نتيجة الاختبار</h2>
+                <div id="result-student-name" style="font-weight: bold; margin: 10px 0; font-size: 1.2rem;"></div>
+                <div class="score-circle"><span id="final-percentage">0%</span></div>
+                <div id="grade-text" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 20px;"></div>
+                <button class="nav-btn next-btn" style="margin: 0 auto;" onclick="location.reload()">إعادة الاختبار</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // مصفوفة الأسئلة الأصلية دون أي تعديل
+        const originalQuestions = [
+            { q: "الهدف الرئيسي من الذكاء الاصطناعي هو إنشاء أنظمة قادرة على محاكاة السلوك البشري الذكي.", a: "صح", c: "الذكاء الاصطناعي يهدف لمحاكاة القدرات الذهنية البشرية مثل التعلم والاستنتاج." },
+            { q: "الذكاء الاصطناعي الضيق (Narrow AI) قادر على أداء أي مهمة معرفية مثل الإنسان تماماً.", a: "خطأ", c: "التصحيح: الذكاء الاصطناعي الضيق مصمم لأداء مهمة واحدة محددة فقط (مثل لعب الشطرنج أو التعرف على الوجوه)، بينما الذكاء العام (AGI) هو الذي يحاكي قدرات الإنسان الشاملة." },
+            { q: "اختبار تورينج (Turing Test) يختبر قدرة الآلة على إظهار سلوك ذكي لا يمكن تمييزه عن سلوك الإنسان.", a: "صح", c: "وضعه آلان تورينج عام 1950 كمعيار لذكاء الآلة." },
+            { q: "مشكلة الإطار (Frame Problem) في الذكاء الاصطناعي تتعلق بصعوبة تمثيل المعرفة الثابتة والمتغيرة في آن واحد.", a: "صح", c: "تتعلق بكيفية تحديث المعرفة حول العالم بعد القيام بفعل معين." },
+            { q: "نظام خبير (Expert System) يعتمد على قاعدة معرفة ومحرك استدلال لحل مشكلات في مجال تخصصي.", a: "صح", c: "يحاكي قدرة الخبير البشري في اتخاذ القرارات." },
+            { q: "استخدام المنطق الرمزي هو الأسلوب الوحيد المستخدم في الذكاء الاصطناعي الحديث.", a: "خطأ", c: "التصحيح: الذكاء الاصطناعي الحديث يعتمد بشكل كبير على الشبكات العصبية والتعلم الآلي (الذكاء الاصطناعي الإحصائي) وليس فقط المنطق الرمزي." },
+            { q: "يمكن لنظام AI أن يكون 'ذكياً' دون أن يكون 'واعياً' تماماً.", a: "صح", c: "الذكاء يتعلق بحل المشكلات، بينما الوعي يتعلق بالإدراك الذاتي والمشاعر." },
+            { q: "البرمجة الكلاسيكية تعتمد على إدخال بيانات وقواعد للحصول على مخرجات، بينما التعلم الآلي يعتمد على إدخال بيانات ومخرجات.", a: "صح", c: "في التعلم الآلي، النظام هو من يستنتج القواعد من البيانات والمخرجات." },
+            { q: "يُعد 'جون مكارثي' من أوائل من عرّف الذكاء الاصطناعي بأنه 'علم وهندسة صنع آلات ذكية'.", a: "صح", c: "يعتبر جون مكارثي الأب الروحي لهذا المصطلح." },
+            { q: "الذكاء الاصطناعي القوي (Strong AI) موجود حالياً في كثير من التطبيقات اليومية مثل الهواتف الذكية.", a: "خطأ", c: "التصحيح: الموجود حالياً هو ذكاء اصطناعي ضيق (Weak/Narrow AI). الذكاء القوي (Strong AI) الذي يمتلك وعياً وقدرات بشرية كاملة لا يزال نظرياً ولم يتحقق بعد." },
+            { q: "الهندسة المعرفية (Cognitive Engineering) تتعامل مع بناء أنظمة تفكر مثل البشر.", a: "صح", c: "تركز على محاكاة العمليات الذهنية البشرية." },
+            { q: "نظام AI غير قادر على التعامل مع المعلومات غير المكتملة أو غير اليقينية.", a: "خطأ", c: "التصحيح: أنظمة الذكاء الاصطناعي الحديثة تستخدم المنطق الضبابي (Fuzzy Logic) والاحتمالات للتعامل مع عدم اليقين والمعلومات الناقصة." },
+            { q: "الوكيل الذكي (Intelligent Agent) هو أي شيء يدرك بيئته ويتخذ إجراءات لتحقيق هدف.", a: "صح", c: "يتفاعل مع البيئة من خلال الحساسات والمؤثرات." },
+            { q: "السلوك الأمثل للوكيل الذكي يعتمد فقط على المعرفة المسبقة وليس على الإدراك الحسي.", a: "خطأ", c: "التصحيح: السلوك الأمثل يعتمد على كل من المعرفة المسبقة والإدراك الحسي الحالي (ما يراه الوكيل الآن في بيئته)." },
+            { q: "التعلم المعزز (Reinforcement Learning) لا يحتاج إلى بيانات مصنفة مسبقاً، بل يتعلم من المكافآت والعقوبات.", a: "صح", c: "مثل تدريب الروبوت على المشي من خلال التجربة والخطأ." },
+            { q: "يمكن حل جميع مشكلات الذكاء الاصطناعي باستخدام خوارزميات البحث العمياء (Blind Search).", a: "خطأ", c: "التصحيح: البحث الأعمى غير فعال في المشكلات المعقدة بسبب 'انفجار الحالة'؛ لذا نستخدم البحث الإرشادي (Heuristic Search) لتسريع الوصول للحل." },
+            { q: "خوارزمية A* مضمونة لإيجاد الحل الأمثل إذا كانت الدالة الإرشادية (Heuristic) مقبولة.", a: "صح", c: "تعتبر من أشهر خوارزميات البحث عن أقصر مسار." },
+            { q: "التعلم تحت الإشراف (Supervised Learning) يتطلب بيانات تدريب تحتوي على مدخلات ومخرجات مستهدفة.", a: "صح", c: "النظام يتعلم من أمثلة محلولة مسبقاً." },
+            { q: "التعلم غير تحت الإشراف (Unsupervised Learning) يستخدم في مشكلات التصنيف والانحدار.", a: "خطأ", c: "التصحيح: التعلم غير تحت الإشراف يستخدم في 'التجميع العنقودي' (Clustering) وتقليل الأبعاد، بينما التصنيف والانحدار يتبعان التعلم تحت الإشراف." },
+            { q: "الإفراط في التجهيز (Overfitting) يعني أن النموذج يؤدي بشكل جيد جداً على بيانات الاختبار الجديدة.", a: "خطأ", c: "التصحيح: الإفراط في التجهيز يعني أن النموذج حفظ بيانات التدريب بدقة عالية جداً لكنه يفشل في التعامل مع بيانات جديدة (ضعف التعميم)." },
+            { q: "التحيز (Bias) العالي يؤدي عادة إلى نموذج بسيط جداً لا يلتقط تعقيد البيانات.", a: "صح", c: "يسمى أيضاً 'نقص التجهيز' (Underfitting)." },
+            { q: "التباين العالي (High Variance) غالباً ما يكون مصحوباً بالإفراط في التجهيز.", a: "صح", c: "النموذج يكون حساساً جداً لأي تغيير طفيف في بيانات التدريب." },
+            { q: "مصفوفة الارتباك (Confusion Matrix) تستخدم فقط لمشكلات الانحدار.", a: "خطأ", c: "التصحيح: مصفوفة الارتباك تستخدم لتقييم أداء نماذج 'التصنيف' (Classification) لمعرفة عدد الإجابات الصحيحة والخاطئة لكل فئة." },
+            { q: "دقة النموذج (Accuracy) هي دائماً أفضل مقياس لأداء نموذج تصنيف، خاصة مع البيانات غير المتوازنة.", a: "خطأ", c: "التصحيح: في البيانات غير المتوازنة، قد تكون الدقة مضللة؛ لذا نستخدم مقاييس أخرى مثل Precision و Recall و F1-Score." },
+            { q: "الانحدار الخطي (Linear Regression) يستخدم للتنبؤ بقيم مستمرة.", a: "صح", c: "مثل التنبؤ بسعر منزل بناءً على مساحته." },
+            { q: "خوارزمية K-mean تصنف ضمن خوارزميات التعلم تحت الإشراف.", a: "خطأ", c: "التصحيح: خوارزمية K-means هي خوارزمية 'تعلم غير تحت إشراف' (Unsupervised) تستخدم لتجميع البيانات المتشابهة في مجموعات." },
+            { q: "شجرة القرار (Decision Tree) يمكن أن تعاني من الإفراط في التجهيز إذا نمت بعمق كبير دون تقليم.", a: "صح", c: "التقليم (Pruning) يساعد في جعل الشجرة أكثر قدرة على التعميم." },
+            { q: "دالة الخسارة (Loss Function) تقيس الفرق بين التنبؤ والقيمة الحقيقية في التعلم تحت الإشراف.", a: "صح", c: "الهدف من التدريب هو تقليل قيمة هذه الدالة لأقل قدر ممكن." },
+            { q: "في الغابة العشوائية (Random Forest)، تُبنى الأشجار بشكل مرتبط ومعتمد على بعضها البعض.", a: "خطأ", c: "التصحيح: في الغابة العشوائية، تُبنى الأشجار بشكل 'مستقل' ومتوازٍ، ثم يتم أخذ متوسط النتائج أو التصويت." },
+            { q: "آلة المتجهات الداعمة (SVM) يمكنها فقط التعامل مع البيانات القابلة للفصل خطياً.", a: "خطأ", c: "التصحيح: باستخدام تقنية 'اللب' (Kernel Trick)، يمكن لـ SVM التعامل مع البيانات غير القابلة للفصل خطياً وتحويلها لمساحات أعلى." },
+            { q: "التعلم العميق (Deep Learning) هو فرع من التعلم الآلي يستخدم شبكات عصبية ذات طبقات متعددة.", a: "صح", c: "يعتمد على محاكاة طريقة عمل الخلايا العصبية في الدماغ." },
+            { q: "دالة التنشيط ReLU تُستخدم فقط في طبقة الإخراج لمشكلات التصنيف الثنائي.", a: "خطأ", c: "التصحيح: ReLU تُستخدم غالباً في 'الطبقات المخفية' لتسريع التدريب، بينما طبقة الإخراج للتصنيف الثنائي تستخدم عادة دالة Sigmoid." },
+            { q: "الـ Softmax يستخدم لمشكلات التصنيف متعدد الفئات وينتج احتمالات مجموعها 1.", a: "صح", c: "يحول المخرجات إلى توزيع احتمالي بين الفئات المختلفة." },
+            { q: "الـ (CNN) Convolutional Neural Network مناسبة جداً للبيانات المتسلسلة مثل النصوص والصوت.", a: "خطأ", c: "التصحيح: CNN مناسبة جداً لـ 'الصور' والبيانات المكانية، بينما البيانات المتسلسلة (نصوص وصوت) تناسبها شبكات RNN أو Transformers." },
+            { q: "الـ (RNN) Recurrent Neural Network تعاني من مشكلة الذاكرة قصيرة المدى، وحلها جاء مع LSTM.", a: "صح", c: "LSTM تمتلك بوابات للتحكم في تدفق المعلومات وحفظها لفترات طويلة." },
+            { q: "المحول (Transformer) يعتمد على آليات الانتباه (Attention) ولا يستخدم التكرار (Recurrence).", a: "صح", c: "هذا ما يجعله أسرع وأكفأ في معالجة النصوص الطويلة (مثل ChatGPT)." },
+            { q: "تحليل المشاعر (Sentiment Analysis) يهدف إلى استخراج المشاعر من النص مثل إيجابي أو سلبي.", a: "صح", c: "تطبيق شهير في معالجة اللغات الطبيعية." },
+            { q: "نموذج حقيبة الكلمات (Bag of Words) يحافظ على ترتيب الكلمات في الجملة.", a: "خطأ", c: "التصحيح: نموذج حقيبة الكلمات يهتم فقط بتكرار الكلمات ويهمل ترتيبها تماماً، مما يجعله يفقد السياق أحياناً." },
+            { q: "تضمين الكلمات (Word Embedding) مثل Word2Vec يمثل الكلمات كمتجهات حقيقية تحافظ على العلاقات الدلالية.", a: "صح", c: "يسمح للآلة بفهم أن 'ملك' و 'ملكة' لهما علاقة دلالية قوية." },
+            { q: "في الرؤية الحاسوبية، مصطلح 'صورة' يعني دائماً صورة ثنائية الأبعاد فقط.", a: "خطأ", c: "التصحيح: الصور يمكن أن تكون ثلاثية الأبعاد (مثل صور الأشعة الطبية أو بيانات LiDAR) أو حتى فيديو (أبعاد مكانية + زمن)." },
+            { q: "عملية الـ Convolution في CNNs تطبق مرشحاً على الصورة لاستخراج معالم مثل الحواف.", a: "صح", c: "تعتبر العملية الأساسية في فهم محتوى الصور." },
+            { q: "طبقة التجميع (Pooling) تهدف إلى زيادة أبعاد الخريطة المعلمية.", a: "خطأ", c: "التصحيح: طبقة التجميع تهدف إلى 'تقليل' الأبعاد (Downsampling) لتقليل الحسابات وجعل النموذج أكثر مرونة." },
+            { q: "التصنيف (Classification) في الرؤية الحاسوبية يعني تحديد موقع الكائنات في الصورة وإطارها.", a: "خطأ", c: "التصحيح: التصنيف يحدد 'ماذا' في الصورة، بينما تحديد 'الموقع' والإطار يسمى 'اكتشاف الكائنات' (Object Detection)." },
+            { q: "التجزئة الدلالية (Semantic Segmentation) تصنف كل بكسل في الصورة إلى فئة معينة.", a: "صح", c: "تعطي فهماً دقيقاً جداً لحدود كل كائن في الصورة." },
+            { q: "زيادة البيانات (Data Augmentation) هي تقنية لزيادة حجم البيانات عن طريق توليد عينات جديدة من العينات الموجودة.", a: "صح", c: "مثل تدوير الصور أو عكسها لتدريب النموذج بشكل أفضل." },
+            { q: "الروبوتات المستقلة (Autonomous Robots) لا تحتاج إلى أي استشعار للبيئة.", a: "خطأ", c: "التصحيح: الاستشعار (Sensing) هو الركيزة الأساسية للروبوتات المستقلة لتتمكن من رؤية العوائق واتخاذ القرارات." },
+            { q: "تخطيط الحركة (Motion Planning) هو جزء أساسي من التحكم في الروبوتات.", a: "صح", c: "يحدد المسار الآمن والفعال للروبوت من نقطة لأخرى." },
+            { q: "المحاكاة (Simulation) في الروبوتات تساعد في تطوير واختبار الخوارزميات دون كلفة روبوتات حقيقية.", a: "صح", c: "تستخدم بيئات مثل Gazebo أو NVIDIA Isaac." },
+            { q: "الإنسان الآلي (Humanoid Robot) هو روبوت يشبه الإنسان في الشكل فقط وليس في الحركة.", a: "خطأ", c: "التصحيح: الروبوت البشري (Humanoid) يهدف لمحاكاة الإنسان في 'الشكل والحركة' معاً ليتمكن من العمل في بيئات مصممة للبشر." },
+            { q: "انحياز الخوارزميات (Algorithmic Bias) يمكن أن ينشأ من بيانات تدريب منحازة.", a: "صح", c: "إذا كانت البيانات تعكس تحيزات بشرية، فإن الخوارزمية ستتعلمها وتكررها." },
+            { q: "الشفافية (Transparency) في أنظمة الذكاء الاصطناعي تعني أن القرارات يمكن تفسيرها وفهمها من قبل البشر.", a: "صح", c: "مهمة جداً في المجالات الحساسة مثل الطب والقضاء." },
+            { q: "الصندوق الأسود (Black Box) في الذكاء الاصطناعي يشير إلى نظام نماذجه سهلة التفسير تماماً.", a: "خطأ", c: "التصحيح: الصندوق الأسود يشير إلى النماذج المعقدة (مثل الشبكات العصبية العميقة) التي يصعب على البشر فهم كيفية اتخاذها للقرار." },
+            { q: "يمكن أن يتسبب الذكاء الاصطناعي في فقدان وظائف ولكنه أيضاً قد يخلق وظائف جديدة.", a: "صح", c: "يغير طبيعة سوق العمل ويتطلب مهارات جديدة." },
+            { q: "التمييز الخوارزمي (Algorithmic Discrimination) هو أحد مخاطر أنظمة الذكاء الاصطناعي.", a: "صح", c: "قد يؤدي لنتائج غير عادلة ضد فئات معينة بناءً على العرق أو الجنس." },
+            { q: "الأتمتة الكاملة للقرارات الحيوية (مثل الإفراج بالكفالة) دون تدخل بشري مقبولة أخلاقياً دائماً.", a: "خطأ", c: "التصحيح: القرارات الحيوية تتطلب وجود 'إنسان في الحلقة' (Human-in-the-loop) لضمان العدالة والمسؤولية الأخلاقية." },
+            { q: "يمكن أن تكون أنظمة التعرف على الوجوه دقيقة جداً ولكنها تحمل مخاطر انتهاك الخصوصية.", a: "صح", c: "تثير جدلاً كبيراً حول المراقبة الجماعية وحقوق الأفراد." },
+            { q: "الهندسة الاستدراجية (Prompt Engineering) هي فرع من الذكاء الاصطناعي يهتم بتصميم أجهزة الروبوتات فقط.", a: "خطأ", c: "التصحيح: الهندسة الاستدراجية تتعلق بفن صياغة 'الأوامر النصية' الموجهة للنماذج اللغوية الكبيرة (مثل ChatGPT) للحصول على أفضل النتائج." },
+            { q: "الذكاء الاصطناعي التوليدي (Generative AI) قادر فقط على توليد الصور وليس النصوص.", a: "خطأ", c: "التصحيح: الذكاء الاصطناعي التوليدي قادر على توليد النصوص، الصور، الصوت، الفيديو، وحتى الأكواد البرمجية." },
+            { q: "التزييف العميق (Deepfake) يمكن أن يستخدم لأغراض ترفيهية أو شريرة مثل التضليل.", a: "صح", c: "يعتمد على تقنيات الشبكات التنافسية التوليدية (GANs)." },
+            { q: "الذكاء الاصطناعي العام (AGI) يمكن أن يصل إلى مستوى ذكاء بشري في مهام محدودة جداً فقط.", a: "خطأ", c: "التصحيح: الذكاء الاصطناعي العام (AGI) يهدف للوصول لمستوى الذكاء البشري في 'أي' مهمة فكرية يستطيع الإنسان القيام بها، وليس مهاماً محدودة." },
+            { q: "الاعتماد المفرط على الذكاء الاصطناعي في التعليم قد يضعف التفكير النقدي لدى الطلاب.", a: "صح", c: "لذا يجب استخدامه كأداة مساعدة وليس كبديل للتفكير." },
+            { q: "كلما زادت تعقيدات النموذج، قلت احتمالية وجود أخطاء أخلاقية أو تمييز.", a: "خطأ", c: "التصحيح: التعقيد الزائد قد يجعل النموذج 'صندوقاً أسود' يصعب مراقبته، مما قد يخفي تحيزات أو أخطاء أخلاقية غير مكتشفة." },
+            { q: "من الممكن حالياً بناء نظام AI لديه وعي ومشاعر حقيقية.", a: "خطأ", c: "التصحيح: الأنظمة الحالية تحاكي المشاعر والوعي من خلال النصوص والبيانات، لكنها لا تمتلك وعياً حقيقياً أو أحاسيس بيولوجية." },
+            { q: "من مسؤولية المهندسين والمصممين أخلاقياً اختبار أنظمة الذكاء الاصطناعي قبل نشرها لمنع الضرر.", a: "صح", c: "يعتبر جزءاً أساسياً من أخلاقيات المهنة." },
+            { q: "خوارزمية البحث بالأفضل أولاً (Best-First Search) تستخدم دالة إرشادية فقط دون تكلفة المسار.", a: "صح", c: "تختار العقدة التي تبدو أقرب للهدف بناءً على التقدير فقط." },
+            { q: "المنطق الضبابي (Fuzzy Logic) يتعامل مع قيم الحقيقة كـ 0 أو 1 فقط.", a: "خطأ", c: "التصحيح: المنطق الضبابي يتعامل مع درجات من الحقيقة بين 0 و 1 (مثل: طويل جداً، طويل قليلاً، متوسط)، وليس فقط قيمتين." },
+            { q: "نزول التدرج العشوائي (SGD) يحتاج إلى حساب التدرج باستخدام كامل مجموعة البيانات في كل خطوة.", a: "خطأ", c: "التصحيح: SGD يحسب التدرج باستخدام 'عينة واحدة' أو 'مجموعة صغيرة' (Batch) في كل خطوة لتسريع العملية." },
+            { q: "الانحدار اللوجستي (Logistic Regression) يستخدم لمشكلات التصنيف الثنائي وليس الانحدار.", a: "صح", c: "رغم اسمه، فهو يستخدم للتصنيف (نعم/لا)." },
+            { q: "معامل بيز المعلوماتي (BIC) يستخدم لمقارنة النماذج ويعاقب النماذج الأكثر تعقيداً.", a: "صح", c: "يساعد في اختيار النموذج الأبسط والأكثر كفاءة." },
+            { q: "في تعلم شبه تحت الإشراف (Semi-supervised)، جزء صغير فقط من البيانات مصنف والباقي غير مصنف.", a: "صح", c: "يستفيد من كميات كبيرة من البيانات غير المصنفة لتقليل كلفة التسمية." },
+            { q: "تعلم متعدد المهام (Multi-task Learning) يدرب نموذجاً واحد على عدة مهام في آن واحد.", a: "صح", c: "يساعد النموذج على تعلم ميزات مشتركة ومفيدة لعدة تطبيقات." },
+            { q: "خوارزمية Q-learning هي نوع من التعلم المعزز بدون نموذج (Model-free).", a: "صح", c: "تتعلم السياسة المثلى من خلال التفاعل المباشر مع البيئة." },
+            { q: "الـ Autoencoder هو نوع من الشبكات العصبية غير تحت الإشراف يستخدم لتقليل الأبعاد أو توليد البيانات.", a: "صح", c: "يتكون من مشفر (Encoder) ومفكك تشفير (Decoder)." },
+            { q: "الـ Hyperparameters يتم تعلمها تلقائياً دائماً.", a: "خطأ", c: "التصحيح: الـ Hyperparameters (مثل معدل التعلم) يتم تحديدها من قبل 'المهندس' قبل بدء التدريب، بينما الأوزان (Weights) هي التي تُتعلم تلقائياً." },
+            { q: "الخوارزميات تحتاج إلى ضبط (tuning).", a: "صح", c: "للوصول لأفضل أداء ممكن." },
+            { q: "دالة الخسارة (Loss function) تقيس الخطأ.", a: "صح", c: "كلما قلت الخسارة، كان أداء النموذج أفضل." },
+            { q: "الدقة (Accuracy) مقياس للأداء.", a: "صح", c: "لكنها ليست المقياس الوحيد كما ذكرنا سابقاً." },
+            { q: "الـ Precision و Recall مقاييس مهمة.", a: "صح", c: "خاصة في مجالات مثل الطب والبحث عن المعلومات." },
+            { q: "الذكاء الاصطناعي لا يمكنه اتخاذ قرارات.", a: "خطأ", c: "التصحيح: الذكاء الاصطناعي مصمم خصيصاً لاتخاذ قرارات بناءً على البيانات والقواعد والخوارزميات المبرمجة فيه." },
+            { q: "الذكاء الاصطناعي يمكنه التعلم من البيانات.", a: "صح", c: "هذا هو جوهر التعلم الآلي." }
+        ];
+
+        let currentQuestionIndex = 0;
+        let studentName = "";
+        let quizQuestions = []; // مصفوفة الأسئلة بعد الخلط العشوائي
+        let userAnswers = [];
+
+        // معالجة اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', function(event) {
+            // تفعيل الاختصارات فقط إذا كانت شاشة الاختبار هي النشطة
+            if (!document.getElementById('quiz-screen').classList.contains('active')) return;
+
+            if (event.key === 'ArrowRight') {
+                nextQuestion();
+            } else if (event.key === 'ArrowLeft') {
+                previousQuestion();
+            } else if (event.key === '1') {
+                checkAnswer('صح');
+            } else if (event.key === '2') {
+                checkAnswer('خطأ');
+            }
+        });
+
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name-input').value.trim();
+            if (!nameInput) { alert("يرجى إدخال اسمك للبدء"); return; }
+            
+            studentName = nameInput;
+            document.getElementById('student-display').innerText = studentName;
+            
+            // خلط الأسئلة عند البدء
+            quizQuestions = shuffleArray(originalQuestions);
+            userAnswers = new Array(quizQuestions.length).fill(null);
+            currentQuestionIndex = 0;
+
+            document.getElementById('remaining-count').innerText = quizQuestions.length;
+
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('quiz-screen').classList.add('active');
+            
+            initSidebar();
+            showQuestion();
+            updateProgress();
+        }
+
+        function initSidebar() {
+            const list = document.getElementById('questions-list');
+            list.innerHTML = '';
+            quizQuestions.forEach((_, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'question-btn';
+                btn.innerText = i + 1;
+                btn.onclick = () => goToQuestion(i);
+                list.appendChild(btn);
+            });
+        }
+
+        function showQuestion() {
+            const q = quizQuestions[currentQuestionIndex];
+            
+            // تأثير حركي خفيف عند تغيير السؤال
+            const questionText = document.getElementById('question-text');
+            questionText.style.opacity = 0;
+            setTimeout(() => {
+                questionText.innerText = q.q;
+                questionText.style.opacity = 1;
+                questionText.style.transition = 'opacity 0.3s ease';
+            }, 100);
+
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'none';
+            
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('correct', 'wrong');
+                btn.disabled = false;
+                
+                // تنظيف الكلاسات لتطبيق الإجابة السابقة إن وجدت
+                if (userAnswers[currentQuestionIndex] !== null) {
+                    btn.disabled = true;
+                    if (btn.innerText.includes(q.a)) btn.classList.add('correct');
+                    if (btn.innerText.includes(userAnswers[currentQuestionIndex]) && userAnswers[currentQuestionIndex] !== q.a) {
+                        btn.classList.add('wrong');
+                    }
+                }
+            });
+
+            if (userAnswers[currentQuestionIndex] !== null) {
+                showFeedback(userAnswers[currentQuestionIndex] === q.a);
+            }
+            
+            updateNavigation();
+            updateSidebar();
+        }
+
+        function checkAnswer(choice) {
+            if (userAnswers[currentQuestionIndex] !== null) return;
+            userAnswers[currentQuestionIndex] = choice;
+            showQuestion();
+            updateStats();
+            updateProgress();
+        }
+
+        function showFeedback(isCorrect) {
+            const q = quizQuestions[currentQuestionIndex];
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            
+            let html = isCorrect ? `<div style="color: #166534; font-weight: bold; font-size: 1.1rem;">✓ إجابة صحيحة!</div>` : `<div style="color: #991b1b; font-weight: bold; font-size: 1.1rem;">✗ إجابة خاطئة. الإجابة الصحيحة هي: ${q.a}</div>`;
+            html += `<div class="correction-box"><strong>المعلومة العلمية:</strong> ${q.c}</div>`;
+            
+            feedback.innerHTML = html;
+            feedback.style.backgroundColor = isCorrect ? "#dcfce7" : "#fee2e2";
+            feedback.style.borderColor = isCorrect ? "#10b981" : "#ef4444";
+        }
+
+        function updateStats() {
+            let correct = 0, wrong = 0, answered = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans !== null) {
+                    answered++;
+                    if (ans === quizQuestions[i].a) correct++;
+                    else wrong++;
+                }
+            });
+            document.getElementById('correct-count').innerText = correct;
+            document.getElementById('wrong-count').innerText = wrong;
+            document.getElementById('remaining-count').innerText = quizQuestions.length - answered;
+        }
+
+        function updateProgress() {
+            let answered = userAnswers.filter(ans => ans !== null).length;
+            let percentage = (answered / quizQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = percentage + "%";
+        }
+
+        function updateNavigation() {
+            document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+            const isLast = currentQuestionIndex === quizQuestions.length - 1;
+            document.getElementById('next-btn').style.display = isLast ? 'none' : 'block';
+            document.getElementById('finish-btn').style.display = isLast ? 'block' : 'none';
+        }
+
+        function updateSidebar() {
+            const btns = document.querySelectorAll('.question-btn');
+            btns.forEach((btn, i) => {
+                btn.classList.remove('current', 'answered', 'wrong');
+                if (i === currentQuestionIndex) btn.classList.add('current');
+                if (userAnswers[i] !== null) {
+                    if (userAnswers[i] === quizQuestions[i].a) btn.classList.add('answered');
+                    else btn.classList.add('answered', 'wrong');
+                }
+            });
+        }
+
+        function goToQuestion(i) { currentQuestionIndex = i; showQuestion(); }
+        function nextQuestion() { if (currentQuestionIndex < quizQuestions.length - 1) { currentQuestionIndex++; showQuestion(); } }
+        function previousQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; showQuestion(); } }
+
+        function confirmFinish() {
+            if (confirm("هل أنت متأكد من رغبتك في إنهاء الاختبار؟")) finishQuiz();
+        }
+
+        function finishQuiz() {
+            let correct = userAnswers.filter((ans, i) => ans === quizQuestions[i].a).length;
+            let percentage = Math.round((correct / quizQuestions.length) * 100);
+            document.getElementById('result-student-name').innerText = `الطالب: ${studentName}`;
+            document.getElementById('final-percentage').innerText = percentage + "%";
+            
+            let grade = "";
+            if (percentage >= 90) grade = "ممتاز جداً! 🌟";
+            else if (percentage >= 80) grade = "ممتاز! 👏";
+            else if (percentage >= 70) grade = "جيد جداً 👍";
+            else if (percentage >= 60) grade = "جيد 🆗";
+            else grade = "تحتاج إلى مزيد من المراجعة 📚";
+            document.getElementById('grade-text').innerText = grade;
+
+            document.getElementById('quiz-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
